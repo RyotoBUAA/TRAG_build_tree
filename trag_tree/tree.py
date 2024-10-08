@@ -65,6 +65,8 @@ class EntityTree:
             print("")
             hierarchy += 1
 
+    # we can add bloom filter to judge whether the entity exists and terminates the bfs seatch early.
+    # meanwhile, this method only applies in the situation that each node has a bloom filter. If each layer has a bloom filter, we should use layer search instead of bfs search. 
     def bfs_search(self, entity):
         temp_queue = Queue()
         temp_queue.put(self.root)
