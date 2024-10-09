@@ -11,7 +11,12 @@ def enhance_spacy(entities):
     patterns = []
 
     for entity in entities:
-        patterns.append({"label": "EXTRA", "pattern": entity.lower().strip()})
+        pattern = []
+        words = list(entity.lower().strip().split())
+        for word in words:
+            pattern.append({"LOWER": word})
+
+        patterns.append({"label": "EXTRA", "pattern": pattern})
 
     ruler.add_patterns(patterns)
 

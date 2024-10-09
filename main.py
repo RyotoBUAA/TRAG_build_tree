@@ -1,11 +1,14 @@
 import spacy
-from entity import relation, ruler
+from entity import relation, ruler, process
 from trag_tree import EntityTree
 import csv
+
 
 # 读取数据集，并将数据加入nlp中
 nlp = ruler.get_enhanced_nlp()
 rel = []
+
+print(process.process_document(nlp, 'High Commissioner Executive Office is UNHCR Innovation Service.'))
 
 with open('entities_file.csv', "r") as csvfile:
     csvreader = csv.reader(csvfile, delimiter=',')
