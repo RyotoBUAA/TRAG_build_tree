@@ -28,9 +28,16 @@ for edge in data:
     if edge[1] not in out_degree:
         root_list.add(edge[1])
 
+print()
 for root in root_list:
     new_tree = EntityTree(root, data)
+    if new_tree.root is None:
+        print("build tree failed")
+        exit(-1)
+    else:
+        print(f"build tree success: {new_tree}")
     forest.append(new_tree)
+print()
 
 test_tree = forest[0]
 test_tree.print_tree()
