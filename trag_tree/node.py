@@ -1,3 +1,6 @@
+from pybloom_live import BloomFilter
+
+
 class EntityNode:
 
     def __init__(self, entity):
