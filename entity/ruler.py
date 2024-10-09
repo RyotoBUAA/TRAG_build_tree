@@ -27,13 +27,21 @@ def get_enhanced_nlp():
         return enhance_spacy(entities)
 
 
-def search_entity_info(tree, nlp, search):
+def search_entity_info(tree, nlp, search, method=1):
     search_context = []
     search = search.lower().strip()
 
     doc = nlp(search)
     for ent in doc.ents:
         if ent.label_ == 'EXTRA':
-            search_context.append(tree.bfs_search(ent.text))
+            if method == 1:
+                search_context.append(tree.bfs_search(ent.text))
+            elif method == 2:
+                search_context.append(tree.bfs_search2(ent.text))
+            elif method == 3:
+                search_context.append(tree.layer_search(ent.text))
+            else:
+                print("not supported method")
+                return None
 
     return search_context

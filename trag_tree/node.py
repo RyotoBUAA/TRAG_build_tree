@@ -25,6 +25,23 @@ class EntityNode:
     def get_parent(self):
         return self.parent
 
+    def get_ancestors(self):
+        ancestors = []
+        ancestor = self.parent
+        while ancestor != None:
+            ancestors.append(ancestor)
+            ancestor = ancestor.parent
+        return ancestors
+
+    def get_context(self):
+        ancestors = self.get_ancestors()
+        context = self.entity
+        length = len(ancestors)
+        for level in range(length-1, -1, -1):
+            context += " under the " + ancestors[level].entity
+        context += " within the framework. "
+        return context
+
     def get_bitset(self):
         return self.bitset
 

@@ -45,7 +45,7 @@ class EntityTree:
 
             if temp_queue.empty() and next_layer:
                 for node in current_layer:
-                    if node.get_children():                     # 每个节点，有该节点的所有子节点的BloomFilter
+                    if node.get_children():     # 每个节点，有该节点的所有子节点构成的BloomFilter
                         node.set_bloom_filter(node.get_all_descendants())
                 current_layer = next_layer
                 next_layer = []
@@ -60,9 +60,9 @@ class EntityTree:
                 node_layers[level] = []
             node_layers[level].append(node)
 
-        # 将每一层的节点以及子节点放入layer_filters2
+        # 将每一层的节点以及子节点放入bloomfilter
         max_level = max(node_layers.keys())
-        for level in range(max_level, -1, -1):  # 从下往上逆序遍历，这样可以服用下层的bloomfilter信息
+        for level in range(max_level, -1, -1):  # 从下往上逆序遍历，这样可以复用下层的bloomfilter信息
             layer_bloom_filter = BloomFilter(capacity=1000)
             for node in node_layers[level]:
                 for entity in node.get_all_descendants():
@@ -71,7 +71,6 @@ class EntityTree:
             self.layer_filters.insert(0, layer_bloom_filter)
 
     def get_node_level(self, node):
-        """计算当前节点的层级深度"""
         level = 0
         while node.get_parent() is not None:
             level += 1
@@ -116,19 +115,26 @@ class EntityTree:
         temp_queue.put(self.root)
         while not temp_queue.empty():
             front = temp_queue.get()
-            print(f"front: {front.get_entity()}")
             if front.get_entity() == entity:
                 return front
+            for sub_node in front.get_children():
+                if sub_node is not None:
+                    temp_queue.put(sub_node)
+        return None
 
-             # if front.get_children() and entity not in front.get_bloom_filter():
-                # return None  
-            # 不能在这里直接服用bfs逻辑+用bloomfilter判断，因为该节点的子节点没有，不代表这一层其余节点的子节点也没有
-            # 判断的信息不够完整，会出现有时对有时错的情况，且无法知道该层还剩多少节点，因此有两种方案
-            # 1. bfs保持不变，修改BloomFilter，将node的BloomFilter设置为子节点+同一层的剩余兄弟节点，但这和层序遍历的BloomFilter几乎重合，且更奇怪，暂时抛弃
-            # 2. BloomFilter保持不变，不采用bfs，改用层序遍历，这样可以通过遍历这一层所有节点，判断这一层所有节点的子节点是否存在目标节点，不会有信息遗漏
-            #    缺点：和原层序遍历方案的思想几乎重合，还没有它方便，因为原方案直接判断这一层以及下面的子节点中是否存在，比一个一个去判断每个节点的下面子节点存在方便
-            #    优点：如果树比较大，那么原方案这一层以及下面的子节点构成的BloomFilter可能过大，会不会出问题、以及速度过慢，每个节点的子节点构成的BloomFIlter更轻量
-           
+    def bfs_search2(self, entity):
+        if self.root is None:
+            return None
+        temp_queue = Queue()
+        temp_queue.put(self.root)
+        while not temp_queue.empty():
+            front = temp_queue.get()
+            # print(f"front: {front.get_entity()}")
+            if front.get_entity() == entity:
+                return front
+             # 如果该节点的子节点都不存在entity，则不入队，该节点下的分支都剪掉
+            if front.get_children() and entity not in front.get_bloom_filter():
+                continue  
             for sub_node in front.get_children():
                 if sub_node is not None:
                     temp_queue.put(sub_node)
