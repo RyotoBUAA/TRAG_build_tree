@@ -1,20 +1,31 @@
+import os
+os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
+
+
 import spacy
 from entity import relation, ruler, process
 from trag_tree import EntityTree
 import csv
 
 
+print('Now run main.py.')
+
 # 读取数据集，并将数据加入nlp中
 nlp = ruler.get_enhanced_nlp()
 rel = []
 
-print(process.process_document(nlp, 'High Commissioner Executive Office is UNHCR Innovation Service.'))
+# print(process.process_document(nlp, 'Global Service Centre in Budapest is under UNHCR Innovation Service'))
+#
+# print('--------test Babelscape/rebel-large is over--------')
 
-with open('entities_file.csv', "r") as csvfile:
-    csvreader = csv.reader(csvfile, delimiter=',')
-    for row in csvreader:
-        rel.append({'subject': row[0], 'object': row[1]})
+# with open('entities_file.csv', "r") as csvfile:
+#     csvreader = csv.reader(csvfile, delimiter=',')
+#     for row in csvreader:
+#         rel.append({'subject': row[0], 'object': row[1]})
 
+with open('entities_file.in', "r") as file:
+    content = file.read()
+    rel = process.process_document(nlp, content)
 
 # 根据数据集构造出EntityTree和forest
 data = []
