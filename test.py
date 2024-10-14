@@ -1,68 +1,21 @@
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
-import os
+# -*- encoding:utf-8 -*-
 
+import os
+from qf_llm import chat
 
 os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
 
+print('Now run main.py.')
 
-def extract_triplets(text):
-    triplets = []
-    relation, subject, relation, object_ = '', '', '', ''
-    text = text.strip()
-    current = 'x'
-    for token in text.replace("<s>", "").replace("<pad>", "").replace("</s>", "").split():
-        if token == "<triplet>":
-            current = 't'
-            if relation != '':
-                triplets.append({'head': subject.strip(), 'type': relation.strip(),'tail': object_.strip()})
-                relation = ''
-            subject = ''
-        elif token == "<subj>":
-            current = 's'
-            if relation != '':
-                triplets.append({'head': subject.strip(), 'type': relation.strip(),'tail': object_.strip()})
-            object_ = ''
-        elif token == "<obj>":
-            current = 'o'
-            relation = ''
-        else:
-            if current == 't':
-                subject += ' ' + token
-            elif current == 's':
-                object_ += ' ' + token
-            elif current == 'o':
-                relation += ' ' + token
-    if subject != '' and relation != '' and object_ != '':
-        triplets.append({'head': subject.strip(), 'type': relation.strip(),'tail': object_.strip()})
-    return triplets
 
-# Load model and tokenizer
-tokenizer = AutoTokenizer.from_pretrained("Babelscape/rebel-large")
-model = AutoModelForSeq2SeqLM.from_pretrained("Babelscape/rebel-large")
-gen_kwargs = {
-    "max_length": 256,
-    "length_penalty": 0,
-    "num_beams": 3,
-    "num_return_sequences": 3,
-}
-
-# Text to extract triplets from
-text = 'Punta Cana is a resort town in the municipality of Higüey, in La Altagracia Province, the easternmost province of the Dominican Republic.'
-
-# Tokenizer text
-model_inputs = tokenizer(text, max_length=256, padding=True, truncation=True, return_tensors = 'pt')
-
-# Generate
-generated_tokens = model.generate(
-    model_inputs["input_ids"].to(model.device),
-    attention_mask=model_inputs["attention_mask"].to(model.device),
-    **gen_kwargs,
-)
-
-# Extract text
-decoded_preds = tokenizer.batch_decode(generated_tokens, skip_special_tokens=False)
-
-# Extract triplets
-for idx, sentence in enumerate(decoded_preds):
-    print(f'Prediction triplets sentence {idx}')
-    print(extract_triplets(sentence))
+print(chat.model_chat('''
+北京航空航天大学（以下简称北航）是我国最早开展软件技术和软件工程研究与应用的高校之一。在全国第四轮学科评估中，北航软件工程学科获评A+学科，连续两次入选国家“一流学科”建设名单。北航软件学院作为首批国家示范性软件学院之一，自2002年成立以来，始终是北航软件工程学科的重要支撑力量。学院2019年入选首批软件工程国家一流本科专业建设点，2021年入选首批特色化示范性软件学院。
+二十年来，北航软件学院始终牢记使命，致力于培养国家和行业急需、具备深厚家国情怀、强烈使命担当、具有国际视野、全面和谐发展的复合型创新型软件人才，在探索校企合作协同育人的实践中，以“创新、创意、创业”为特点的人才培养工作，在互联网新经济时代孵化了一批有影响力的创新企业，先后为国家和行业培养2.4万余名活跃在一线的软件人才，形成了独特的软件工程人才培养模式。
+2021年，学院入选首批国家特色化示范性软件学院，开启了高质量软件人才培养的2.0模式。学院聚焦国家软件战略主战场，确立以关键基础软件、大型工业软件、安全关键软件、智能软件工程为代表性方向探索关键软件产教融合人才培养的新思路，以服务国家重大战略需求、解决“卡脖子”问题为使命，坚持立德树人根本，突出人才培养特色，努力实现软件工程人才培养的三个转变：即以市场需求驱动为主转变为以国家战略驱动为主培养软件人才、从适应软件产业发展的专业人才培养转变为具有自主创新能力的高级复合型软件人才培养、以人才培养为主转变为人才培养与面向国家战略需求的技术攻关并重。学院秉持北航“厚植情怀、强化基础、突出实践、科教融通”的人才培养方针，引导学生树立“矢志报国、求真尚德、创新有为、笃行实干”的价值追求，着力培养具有高度责任感和自主创新能力、具备先进软件工程方法和领域知识的软件人才。
+学院是首批软件工程国家级一流本科专业建设点。本专业以培养具有自主创新能力的高级复合型软件人才为目标，突出创新潜质和工程素质，围绕智能工业软件与大数据分析、基础软件与新型平台软件和智能软件工程等专业方向，努力培养学生具有良好的职业道德和使命担当，扎实的软件工程理论和专业知识，良好的交流与组织协调能力，较强的参与国际竞争能力和创新能力，探索适应国家经济建设与发展需求的特色化示范性软件人才培养的“北航范式”。
+学院围绕关键软件领域的国家战略和学术前沿布局科研方向。依托软件开发环境国家重点实验室、虚拟现实技术与系统国家重点实验室、可信网络计算技术重点学科实验室国家级、省部级科研平台及北航青岛研究院、杭州研究院等校地合作平台，形成了人机物融合环境关键基础软件、先进工业软件方法与环境、安全关键系统软件与工程、人工智能与智能软件工程等优势方向，突破基础理论与核心技术，建设重大系统和平台，承担国家重大科研任务，支撑系列自主研发操作系统的安全验证，完成系列重大型号的软件试验鉴定，在推动我国软件产业由大到强的历史跨越中贡献力量。
+学院积极开展产教融合科研创新，通过学科融合、产业驱动，将软件工程人才培养融入联合软件技术攻关。近年来，已经与中国电子科技集团、中国航空工业集团、中国航天科技集团、载人航天工程软件工程中心、华为、麒麟软件、数码大方等建立联合实验室或联合软件技术攻关基地，推进关键软件领域工程硕士、工程博士培养，通过校企联合双导师制、校企协同课程和实践机制、需求导向的个性化培养过程，推动关键软件领域卓越工程师培养，服务国家软件战略和国民经济社会主战场。
+学院营造鼓励新形势下开展国际教学与科研合作的氛围，充分利用线上模式拓展国际合作新机制。探索建立特色方向上国际软件工程师师资、课程、实训认证体系，提升学生的国际交流和全球工作的能力；探索举办具有国际影响力的软件工程学术会议，提升国际影响力；加强人才培养和科技创新领域的国际合作，构建线上线下结合的开放国际合作网络和常态化国际学术交流机制，通过国际引智计划聘请国际优质师资开设短期课程。
+学院秉持“软件改变生活，创新成就精彩”理念，教育引导学生践行“软件报国”价值追求，学生素质能力广受社会和企业欢迎。学院积极构建创新实践育人生态圈，依托学院-学校-国内-国际四级科创平台实现学生100%参与科技竞赛。近年来，先后获中国国际“互联网+”大学生创新创业大赛金奖、国际大学生程序设计竞赛金奖等奖项357人次，学院毕业生牵头创立12家高新科技企业，多家企业成功上市。学院毕业生就业面广、质量高、薪水高。近三年，本科生读研深造率超60%，毕业生就业率达到98%以上，进入国家科技工业、关键软件和知名高新科技企业等就业毕业生超过80%。
+学院将围绕特色化示范性软件学院建设要求，聚焦国家战略需求和软件产业发展需要，坚持创新驱动，强化使命担当，力争在关键基础软件、大型工业软件两个领域，通过学科交叉、产教融合，形成国家战略性科技创新力量和高质量软件人才的培养基地，以坚实步伐向着国内一流国际知名的软件学院迈进，为国家和社会培养一流人才、作出一流贡献。
+'''))

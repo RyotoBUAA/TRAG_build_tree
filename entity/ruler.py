@@ -4,7 +4,7 @@ from spacy.pipeline import EntityRuler
 
 
 def enhance_spacy(entities):
-    nlp = spacy.load("en_core_web_sm")
+    nlp = spacy.load("zh_core_web_sm")
 
     ruler = nlp.add_pipe("entity_ruler", before="ner")
 

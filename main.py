@@ -1,31 +1,38 @@
+# -*- encoding:utf-8 -*-
+
 import os
-os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
-
-
-import spacy
-from entity import relation, ruler, process
+from entity import ruler
 from trag_tree import EntityTree
 import csv
 
+os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
 
 print('Now run main.py.')
 
+
 # 读取数据集，并将数据加入nlp中
-nlp = ruler.get_enhanced_nlp()
+
 rel = []
 
 # print(process.process_document(nlp, 'Global Service Centre in Budapest is under UNHCR Innovation Service'))
 #
 # print('--------test Babelscape/rebel-large is over--------')
 
-# with open('entities_file.csv', "r") as csvfile:
-#     csvreader = csv.reader(csvfile, delimiter=',')
-#     for row in csvreader:
-#         rel.append({'subject': row[0], 'object': row[1]})
+entities_list = set()
 
-with open('entities_file.in', "r") as file:
-    content = file.read()
-    rel = process.process_document(nlp, content)
+with open('entities_file.csv', "r", encoding='utf-8') as csvfile:
+    csvreader = csv.reader(csvfile, delimiter=',')
+    for row in csvreader:
+        rel.append({'subject': row[0], 'object': row[1]})
+        entities_list.add(row[0])
+        entities_list.add(row[1])
+
+nlp = ruler.enhance_spacy(list(entities_list))
+
+
+# with open('entities_file.in', "r") as file:
+#     content = file.read()
+#     rel = process.process_document(nlp, content)
 
 # 根据数据集构造出EntityTree和forest
 data = []
@@ -53,8 +60,8 @@ for root in root_list:
     forest.append(new_tree)
 print()
 
-test_tree = forest[0]
-test_tree.print_tree()
+for test_tree in forest:
+    test_tree.print_tree()
 
 
 # 测试EntityTree三种方式的搜索效果
