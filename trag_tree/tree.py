@@ -3,19 +3,24 @@ from queue import Queue
 from pybloom_live import BloomFilter
 
 
+node_record = {}
+
+
 class EntityTree:
 
     def __init__(self, root_entity, data):
+
         self.root = EntityNode(root_entity)
-        self.edges = {}
+
+        edges = {}
         self.layer_filters = []
         for edge in data:
-            if edge[0] not in self.edges:
-                self.edges[edge[0]] = set()
-            if edge[1] not in self.edges:
-                self.edges[edge[1]] = set()
-            self.edges[edge[0]].add(edge[1])
-            self.edges[edge[1]].add(edge[0])
+            if edge[0] not in edges:
+                edges[edge[0]] = set()
+            if edge[1] not in edges:
+                edges[edge[1]] = set()
+            edges[edge[0]].add(edge[1])
+            edges[edge[1]].add(edge[0])
 
         temp_queue = Queue()
         temp_queue.put(self.root)
@@ -30,18 +35,19 @@ class EntityTree:
             current_layer.append(front)
             self.all_nodes[front.get_entity()] = front
 
-            for sub_node in self.edges[front.get_entity()]:
+            for sub_node in edges[front.get_entity()]:
                 if sub_node is not None and sub_node != front.get_entity():
                     if front.get_parent() is None or ( front.get_parent() is not None \
                             and sub_node != front.get_parent().get_entity()):
                         if sub_node in vis:  # 无向有环图，不是树
-                            self.root = None
-                            print("invalid data, cycle exists, cannot build an EntityTree")
-                            return
-                        new_node = EntityNode(sub_node)
-                        front.add_children(new_node)
-                        next_layer.append(new_node)
-                        temp_queue.put(new_node)
+                            # self.root = None
+                            # print("检测到要出现环路，暂时移除此边")
+                            pass
+                        else:
+                            new_node = EntityNode(sub_node)
+                            front.add_children(new_node)
+                            next_layer.append(new_node)
+                            temp_queue.put(new_node)
 
             if temp_queue.empty() and next_layer:
                 for node in current_layer:
@@ -63,7 +69,7 @@ class EntityTree:
         # 将每一层的节点以及子节点放入bloomfilter
         max_level = max(node_layers.keys())
         for level in range(max_level, -1, -1):  # 从下往上逆序遍历，这样可以复用下层的bloomfilter信息
-            layer_bloom_filter = BloomFilter(capacity=1000)
+            layer_bloom_filter = BloomFilter(capacity=4000)
             for node in node_layers[level]:
                 for entity in node.get_all_descendants():
                     layer_bloom_filter.add(entity)

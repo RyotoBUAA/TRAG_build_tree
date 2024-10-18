@@ -53,7 +53,7 @@ class EntityNode:
 
     def set_bloom_filter(self, entities):
         """为当前节点设置 Bloom Filter"""
-        self.bloom_filter = BloomFilter(capacity=1000)  # 初始化 Bloom Filter
+        self.bloom_filter = BloomFilter(capacity=4000)  # 初始化 Bloom Filter
         for entity in entities:
             self.bloom_filter.add(entity)
 

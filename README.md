@@ -4,11 +4,13 @@
 
 ## 项目根目录
 
-`entities.csv`：存储所有必要实体信息
+`entities.csv`：存储所有必要实体信息（只作为查看用）
 
-`entities_file.csv`：实体依赖关系（第一列依赖第二列），后续可能需要针对性设计
+`entities_file.csv`：实体依赖关系（第一列依赖第二列）
 
 `main.py`：函数使用示例
+
+`entities_file_erect.py`：调用大模型查找实体关系
 
 ## trag_tree
 
@@ -42,9 +44,16 @@
 * `get_enhanced_nlp()`：打开`entities.csv`，加载自定义实体信息到NLP中，返回载入实体信息的NLP
 * `search_entity_info(tree, nlp, search)`：是原论文函数改写，传入树、NLP、搜索信息（字符串），返回树节点列表（`EntityNode`类的列表）
 
-### relation.py
+### read.py
 
-* `extract_relations(doc)`：识别`Spacy`返回的`doc`中普通名词之间的子父类从属关系，例如`A is a B`识别`A`和`B`的关系
-* `extract_entities_relations(doc)`：识别`Spacy`返回的`doc`中实体之间的从属关系
+读取`pdf, doc, docx`的内容
 
-目前这两个函数由于`entities_file`的具体构造还比较模糊，暂无用处
+### process.py
+
+`Babelscape/rebel-large`模型使用，效果太差，现在已经弃用
+
+## rel_llm
+
+### chat.py
+
+调用大模型进行关系提取
